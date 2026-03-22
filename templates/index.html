@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WeCom AI 助手</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            padding: 30px 0;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .card-header h2 {
+            color: #333;
+            font-size: 1.3rem;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #666;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-card .number {
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+
+        .stat-card .label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+
+        .goals-section {
+            margin-top: 20px;
+        }
+
+        .goal-input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .goal-input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .goal-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .goals-list {
+            list-style: none;
+        }
+
+        .goal-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            transition: all 0.3s;
+        }
+
+        .goal-item:hover {
+            background: #f0f0f0;
+        }
+
+        .goal-item .goal-text {
+            flex: 1;
+            color: #333;
+        }
+
+        .goal-item .delete-btn {
+            color: #dc3545;
+            cursor: pointer;
+            font-size: 1.2rem;
+            opacity: 0.6;
+            transition: opacity 0.3s;
+        }
+
+        .goal-item .delete-btn:hover {
+            opacity: 1;
+        }
+
+        .summary-section {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 15px;
+        }
+
+        .summary-section pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: inherit;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #667eea;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .message-item {
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .message-item.urgent {
+            border-left-color: #dc3545;
+            background: #fff5f5;
+        }
+
+        .message-item .content {
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .message-item .meta {
+            font-size: 0.85rem;
+            color: #888;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-left: 8px;
+        }
+
+        .badge-urgent {
+            background: #dc3545;
+            color: white;
+        }
+
+        .badge-important {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .badge-normal {
+            background: #28a745;
+            color: white;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            border: none;
+            background: #f0f0f0;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #888;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            background: #28a745;
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .toast.error {
+            background: #dc3545;
+        }
+
+        .nav {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .nav-item {
+            padding: 12px 24px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 30px;
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: white;
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>WeCom AI 助手</h1>
+            <p>智能分析群组消息，自动提取重点和待办事项</p>
+        </header>
+
+        <nav class="nav">
+            <a href="#" class="nav-item active" data-tab="dashboard">仪表盘</a>
+            <a href="#" class="nav-item" data-tab="summary">生成摘要</a>
+            <a href="#" class="nav-item" data-tab="messages">消息详情</a>
+        </nav>
+
+        <!-- 仪表盘 -->
+        <div id="dashboard" class="tab-content active">
+            <div class="stats-grid" id="statsGrid">
+                <div class="stat-card">
+                    <div class="number" id="chatCount">-</div>
+                    <div class="label">群组数量</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number" id="goalsCount">-</div>
+                    <div class="label">设定目标</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number" id="analysisCount">-</div>
+                    <div class="label">分析次数</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2>设定你的目标</h2>
+                    <button class="btn btn-primary" onclick="addGoal()">添加目标</button>
+                </div>
+
+                <div class="goals-section">
+                    <div class="goal-input-group" id="goalInputGroup" style="display: none;">
+                        <input type="text" class="goal-input" id="newGoalInput" placeholder="输入你的目标...">
+                        <button class="btn btn-primary" onclick="saveGoal()">保存</button>
+                        <button class="btn btn-secondary" onclick="hideGoalInput()">取消</button>
+                    </div>
+
+                    <ul class="goals-list" id="goalsList">
+                        <li class="empty-state">暂无目标，点击上方按钮添加</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2>最近分析</h2>
+                    <button class="btn btn-primary" onclick="refreshDashboard()">刷新</button>
+                </div>
+                <div id="recentAnalysis">
+                    <div class="loading">加载中</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 生成摘要 -->
+        <div id="summary" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <h2>生成消息摘要</h2>
+                    <button class="btn btn-primary" onclick="generateSummary()">立即生成</button>
+                </div>
+                <p style="color: #666; margin-bottom: 15px;">
+                    点击按钮，系统将从你的企业微信群组中获取最新消息，生成摘要并提取待办事项。
+                </p>
+                <div id="summaryResult">
+                    <div class="empty-state">点击「立即生成」获取摘要</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 消息详情 -->
+        <div id="messages" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <h2>消息详情</h2>
+                    <button class="btn btn-primary" onclick="loadMessages()">刷新消息</button>
+                </div>
+                <div id="messagesList">
+                    <div class="loading">加载中</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // Tab 切换
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                item.classList.add('active');
+                document.getElementById(item.dataset.tab).classList.add('active');
+            });
+        });
+
+        // 显示 Toast
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast' + (isError ? ' error' : '');
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        // 加载仪表盘数据
+        async function refreshDashboard() {
+            try {
+                const response = await fetch('/api/dashboard');
+                const result = await response.json();
+
+                if (result.success) {
+                    document.getElementById('chatCount').textContent = result.data.chat_count || 0;
+                    document.getElementById('goalsCount').textContent = result.data.goals?.length || 0;
+                    document.getElementById('analysisCount').textContent = result.data.recent_analysis?.length || 0;
+
+                    // 加载目标
+                    loadGoals(result.data.goals || []);
+
+                    // 加载最近分析
+                    loadRecentAnalysis(result.data.recent_analysis || []);
+                }
+            } catch (error) {
+                showToast('加载数据失败', true);
+                console.error(error);
+            }
+        }
+
+        // 加载目标列表
+        function loadGoals(goals) {
+            const list = document.getElementById('goalsList');
+
+            if (goals.length === 0) {
+                list.innerHTML = '<li class="empty-state">暂无目标，点击上方按钮添加</li>';
+                return;
+            }
+
+            list.innerHTML = goals.map(goal => `
+                <li class="goal-item">
+                    <span class="goal-text">${goal}</span>
+                    <span class="delete-btn" onclick="deleteGoal('${goal}')">&times;</span>
+                </li>
+            `).join('');
+        }
+
+        // 显示目标输入框
+        function addGoal() {
+            document.getElementById('goalInputGroup').style.display = 'flex';
+            document.getElementById('newGoalInput').focus();
+        }
+
+        // 隐藏目标输入框
+        function hideGoalInput() {
+            document.getElementById('goalInputGroup').style.display = 'none';
+            document.getElementById('newGoalInput').value = '';
+        }
+
+        // 保存目标
+        async function saveGoal() {
+            const input = document.getElementById('newGoalInput');
+            const goal = input.value.trim();
+
+            if (!goal) {
+                showToast('请输入目标内容', true);
+                return;
+            }
+
+            try {
+                // 获取当前目标
+                const response = await fetch('/api/goals');
+                const result = await response.json();
+                const goals = result.goals || [];
+                goals.push(goal);
+
+                // 保存
+                const saveResponse = await fetch('/api/goals', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ goals })
+                });
+
+                if (saveResponse.ok) {
+                    showToast('目标已保存');
+                    hideGoalInput();
+                    refreshDashboard();
+                }
+            } catch (error) {
+                showToast('保存失败', true);
+                console.error(error);
+            }
+        }
+
+        // 删除目标
+        async function deleteGoal(goal) {
+            try {
+                const response = await fetch(`/api/goals?goal=${encodeURIComponent(goal)}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    showToast('目标已删除');
+                    refreshDashboard();
+                }
+            } catch (error) {
+                showToast('删除失败', true);
+                console.error(error);
+            }
+        }
+
+        // 加载最近分析
+        function loadRecentAnalysis(analyses) {
+            const container = document.getElementById('recentAnalysis');
+
+            if (analyses.length === 0) {
+                container.innerHTML = '<div class="empty-state">暂无分析记录</div>';
+                return;
+            }
+
+            container.innerHTML = analyses.map(analysis => `
+                <div class="summary-section">
+                    <pre>${analysis.summary || '无摘要内容'}</pre>
+                    <p style="color: #888; font-size: 0.85rem; margin-top: 10px;">
+                        分析时间: ${new Date(analysis.analyzed_at).toLocaleString('zh-CN')}
+                    </p>
+                </div>
+            `).join('');
+        }
+
+        // 生成摘要
+        async function generateSummary() {
+            const container = document.getElementById('summaryResult');
+            container.innerHTML = '<div class="loading">正在分析消息，请稍候...</div>';
+
+            try {
+                const response = await fetch('/api/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    const data = result.data;
+                    container.innerHTML = `
+                        <div class="summary-section">
+                            <pre>${data.summary}</pre>
+                        </div>
+                        <div style="margin-top: 20px;">
+                            <h3 style="margin-bottom: 15px;">重要消息 (${data.important_messages?.length || 0} 条)</h3>
+                            ${(data.important_messages || []).map(msg => `
+                                <div class="message-item ${msg.reason?.includes('紧急') ? 'urgent' : ''}">
+                                    <div class="content">${msg.content}</div>
+                                    <div class="meta">
+                                        ${msg.chat_name} | ${msg.sender} | ${msg.reason || '普通'}
+                                    </div>
+                                </div>
+                            `).join('') || '<div class="empty-state">暂无重要消息</div>'}
+                        </div>
+                        <div style="margin-top: 20px;">
+                            <h3 style="margin-bottom: 15px;">待办事项 (${data.todo_items?.length || 0} 项)</h3>
+                            ${(data.todo_items || []).map((todo, i) => `
+                                <div class="message-item">
+                                    <div class="content">
+                                        ${i + 1}. ${todo.content}
+                                        <span class="badge badge-${todo.priority === '高' ? 'urgent' : todo.priority === '中' ? 'important' : 'normal'}">
+                                            ${todo.priority}优先级
+                                        </span>
+                                    </div>
+                                    <div class="meta">${todo.chat_name} | ${todo.sender}</div>
+                                </div>
+                            `).join('') || '<div class="empty-state">暂无待办事项</div>'}
+                        </div>
+                    `;
+                    showToast('摘要生成成功');
+                } else {
+                    container.innerHTML = `<div class="empty-state" style="color: #dc3545;">生成失败: ${result.error}</div>`;
+                }
+            } catch (error) {
+                container.innerHTML = '<div class="empty-state" style="color: #dc3545;">请求失败，请重试</div>';
+                console.error(error);
+            }
+        }
+
+        // 加载消息
+        async function loadMessages() {
+            const container = document.getElementById('messagesList');
+            container.innerHTML = '<div class="loading">加载中...</div>';
+
+            try {
+                const response = await fetch('/api/messages');
+                const result = await response.json();
+
+                if (result.success && result.data.length > 0) {
+                    container.innerHTML = result.data.map(chat => `
+                        <div style="margin-bottom: 30px;">
+                            <h3 style="margin-bottom: 15px; color: #667eea;">${chat.chat_name}</h3>
+                            ${(chat.messages || []).slice(0, 10).map(msg => `
+                                <div class="message-item">
+                                    <div class="content">${msg.content}</div>
+                                    <div class="meta">${msg.from?.name || '未知'} | ${new Date(parseInt(msg.msgtime)).toLocaleString('zh-CN') || ''}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `).join('');
+                } else {
+                    container.innerHTML = '<div class="empty-state">暂无消息</div>';
+                }
+            } catch (error) {
+                container.innerHTML = '<div class="empty-state" style="color: #dc3545;">加载失败</div>';
+                console.error(error);
+            }
+        }
+
+        // 页面加载时
+        document.addEventListener('DOMContentLoaded', () => {
+            refreshDashboard();
+        });
+    </script>
+</body>
+</html>
